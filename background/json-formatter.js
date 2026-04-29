@@ -1,8 +1,9 @@
 /**
  * JSON Formatter — background module.
  *
- * Listens for main_frame responses with Content-Type: application/json
- * and records matching tab IDs so the content script knows when to activate.
+ * Listens for main_frame responses with a JSON Content-Type
+ * (application/json or application/vnd.api+json) and records matching
+ * tab IDs so the content script knows when to activate.
  *
  * Uses chrome.storage.session so the state survives service worker restarts
  * within the same browser session.
@@ -35,8 +36,10 @@ chrome.webRequest.onHeadersReceived.addListener(
       (h) => h.name.toLowerCase() === "content-type"
     );
 
+    const value = contentType?.value?.toLowerCase() ?? "";
     const isJson =
-      contentType?.value?.toLowerCase().includes("application/json") ?? false;
+      value.includes("application/json") ||
+      value.includes("application/vnd.api+json");
 
     markTab(details.tabId, isJson);
   },
